@@ -1,53 +1,48 @@
-<div align="center">
-
 # proxy-rule-scripts
 
-**自用 Loon 规则集。** 一个 App 一个插件，规则直接写在文件里 —— 无构建、无外部依赖、无中间层，所见即所得。
+自用的代理规则与插件合集，按客户端分类，持续添加和维护。
 
-[![Stars](https://img.shields.io/github/stars/yangxiaopeipei/proxy-rule-scripts?style=for-the-badge&logo=github&labelColor=24292f&color=ffd700&label=Stars)](https://github.com/yangxiaopeipei/proxy-rule-scripts/stargazers)
-[![Last Commit](https://img.shields.io/github/last-commit/yangxiaopeipei/proxy-rule-scripts?style=for-the-badge&logo=git&labelColor=24292f&color=60c5ba&label=更新)](https://github.com/yangxiaopeipei/proxy-rule-scripts/commits/main)
-[![License](https://img.shields.io/github/license/yangxiaopeipei/proxy-rule-scripts?style=for-the-badge&labelColor=24292f&color=1E90FF&label=许可)](https://github.com/yangxiaopeipei/proxy-rule-scripts/blob/main/LICENSE)
+一个应用一个插件，规则、用途和注意事项直接写在插件文件中，无需额外脚本或构建。目前从 Loon 插件开始整理，虎扑是首个收录的应用。
 
-</div>
+## 插件列表
 
----
+| 应用 | 客户端 | 用途 | 插件 | 导入 |
+| --- | --- | --- | --- | --- |
+| 虎扑 | Loon | 去广告、清理页面推广内容 | [查看文件](Loon/PRS_HUPU.plugin) · [订阅地址](https://cdn.jsdelivr.net/gh/yangxiaopeipei/proxy-rule-scripts@main/Loon/PRS_HUPU.plugin) | [一键导入](https://www.nsloon.com/openloon/import?plugin=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fyangxiaopeipei%2Fproxy-rule-scripts%40main%2FLoon%2FPRS_HUPU.plugin) |
 
-## 📦 订阅
+后续插件统一添加到此列表。适用版本、具体规则和可能影响的功能，以各插件文件中的说明为准。
 
-| App | 处理内容 | 导入 |
-| :-: | :-- | :-: |
-| <img src="https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/HUPU.png" width="22" alt="虎扑"><br>**虎扑** | 开屏 / 插屏广告<br>首页与列表推广位<br>我的页推广模块、论坛推广入口 | [一键导入](https://www.nsloon.com/openloon/import?plugin=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fyangxiaopeipei%2Fproxy-rule-scripts%40main%2FLoon%2FPRS_HUPU.plugin) |
+## 使用方式
 
-<details>
-<summary>订阅地址与备用导入方式</summary>
+1. 从列表中选择适用于当前客户端的插件，先查看文件中的说明与版本要求。
+2. 点击「一键导入」，或复制「订阅地址」的链接，在客户端的插件管理中通过 URL 添加并启用。
+3. 按插件需要开启复写（Rewrite）和 MitM。涉及 HTTPS 内容修改时，需安装并信任自己生成的客户端 CA 证书；单纯的域名拦截不需要 MitM。
+4. 开启客户端，重新打开对应应用，检查规则效果及常用功能。
 
-在 Loon → 插件 → 右上角 `+` → URL 里粘贴：
+订阅使用公开仓库的 `main` 分支，文件推送后才能获取。私有仓库请使用本地文件导入。
 
-```plaintext
-https://cdn.jsdelivr.net/gh/yangxiaopeipei/proxy-rule-scripts@main/Loon/PRS_HUPU.plugin
+## 更新与排查
+
+- **更新插件**：在客户端中手动更新订阅。jsDelivr 可能存在缓存，也可打开列表中的文件，通过 GitHub 的 `Raw` 获取原始文件地址。
+- **规则未生效**：检查插件是否启用、客户端版本是否满足要求，以及复写和 MitM 是否配置正确。
+- **应用功能异常**：先停用插件确认原因，再按文件注释逐条排查；避免同时启用多个处理同一应用的插件。
+
+## 维护约定
+
+```text
+Loon/       # Loon 插件，每个应用一个 .plugin 文件
+README.md   # 仓库说明与插件总目录
+LICENSE     # 许可协议
 ```
 
-也可以写进主配置的 `[Plugin]` 段：
+- 插件按客户端放置；新增 Loon 插件使用 `Loon/PRS_<APP>.plugin`，并更新本页列表和订阅入口。收录其他客户端的内容时，再添加对应目录。
+- 插件文件直接作为维护和订阅入口。名称、用途、作者、版本要求及注意事项写在文件内，不为单个插件另建 README。
+- 修改 Loon 插件时更新 `#!date`；为可能影响正常功能的规则添加注释，并保留引用规则的原作者、来源及许可说明。
+- 提交前在对应客户端中检查导入、规则命中和应用常用功能；新增或修改规则均需设备实测。
+- 个人配置、证书等本地文件放在已忽略的 `.local/` 目录。
 
-```plaintext
-https://cdn.jsdelivr.net/gh/yangxiaopeipei/proxy-rule-scripts@main/Loon/PRS_HUPU.plugin, enabled=true
-```
+## 许可
 
-Safari 打不开上面的「一键导入」时，直接用这个 Scheme：
+本仓库采用 [CC BY-NC 4.0](LICENSE)，使用时需署名，禁止商用。第三方内容遵循其原有许可。
 
-```plaintext
-loon://import?plugin=https%3A%2F%2Fcdn.jsdelivr.net%2Fgh%2Fyangxiaopeipei%2Fproxy-rule-scripts%40main%2FLoon%2FPRS_HUPU.plugin
-```
-
-</details>
-
-> 直连 `raw.githubusercontent.com` 通常不通，所以走 jsDelivr。
-> jsDelivr 有缓存，更新后可能要等几分钟才生效，急用就在链接后面加 `?t=<时间戳>`。
-
----
-
-## 免责
-
-自用整理，规则多来自公开互联网与他人开源项目，仅供学习与个人使用。不保证时效性与可用性，App 升级后部分规则可能失效。
-
-本仓库以 [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/) 许可发布 —— **禁止商用**。
+仅供学习与个人使用，与相关 App 官方无关。规则可能随 App 更新失效，不保证持续可用。

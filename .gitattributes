@@ -1,0 +1,5 @@
+# 文本文件统一使用 LF；二进制文件由 Git 自动识别。
+* text=auto eol=lf
+
+# 明确将代理插件作为文本处理，便于查看差异。
+*.plugin text diff

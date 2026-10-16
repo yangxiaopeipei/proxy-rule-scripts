@@ -1,17 +1,21 @@
-# 生成产物由 scripts/build.py 产出，由 CI 自动提交
-# 但如果你在本地跑 build.py 生成了别人没有的文件，这里兜底忽略临时物
-
-# Python
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-
-# 系统
+# 系统文件
 .DS_Store
 Thumbs.db
 
-# 编辑器
+# 编辑器与临时文件
 .vscode/
 .idea/
 *.swp
+*.swo
+*~
+*.tmp
+*.bak
+
+# 个人配置与本地凭据
+.local/
+.env
+.env.*
+!.env.example
+*.p12
+*.pfx
+*.key
