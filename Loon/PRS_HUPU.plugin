@@ -1,11 +1,11 @@
 #!name=虎扑去广告
-#!desc=移除虎扑开屏 / 插屏广告、首页与列表推广位、我的页面推广模块、论坛推广入口。
+#!desc=移除虎扑开屏 / 插屏广告、首页与列表推广位、我的页面推广模块、论坛推广入口，并拦截优量汇 / 穿山甲 / 神马等第三方广告 SDK。
 #!author=自用
 #!tag=去广告
 #!icon=https://raw.githubusercontent.com/luestr/IconResource/main/App_icon/120px/HUPU.png
 #!openUrl=https://apps.apple.com/app/id906632439
 #!loon_version=3.5.1(978)
-#!date=2026-10-14
+#!date=2026-10-19
 
 # ============================================================
 # 手工维护 —— 本文件就是源头，改完直接提交
@@ -14,16 +14,49 @@
 #   2. URL 里的 App 版本号一律用通配 \d+/[\d.]+/，写死版本号是这类插件失效的头号原因
 #   3. jq 表达式里嵌双引号要写成 \"
 #   4. 改完顺手更新上面的 #!date=
+#
+# 2026-10-19 增补（依据抓包）：
+#   - 新增第三方广告 SDK 域名拦截：优量汇(GDT) / 穿山甲(Pangolin) / 神马(sm.cn) / Hoorahgo
+#   - 新增 goblin 广告配置(config/app|h5)与头条广告(toutiao/app)接口拦截
+#   - 新增 e-goblin 广告曝光/竞价上报域拦截
+#   - 新增虎扑自有埋点域拦截（hermes/collect/ccdace，非广告、仅减少上报，见下方「可选」注释）
+#   有意未拦截：视频播放(v.hoopchina / volccdn / volcvod / neptune)、风控(同盾 / 数美)、
+#   A/B 实验(themis / snssdk abtest)——拦了会破视频或触发风控，别误伤。
 # ============================================================
 
 [Rule]
-# 纯广告域，域名级拦截不需要 MITM
-# 虎扑广告交易域
+# ---------- 虎扑自有广告域（域名级拦截，无需 MITM） ----------
+# 广告交易 / 投放 / 调度域
 DOMAIN-SUFFIX,adx.hupu.com,REJECT
-# 广告投放 API
 DOMAIN-SUFFIX,adx-api.hupu.com,REJECT
-# 广告调度域
 DOMAIN-SUFFIX,orz.hupu.com,REJECT
+# 广告曝光 / 竞价上报域（pm=曝光，rm=结算）
+DOMAIN-SUFFIX,e-goblin.hupu.com,REJECT
+
+# ---------- 第三方广告 SDK 域（域名级拦截，无需 MITM） ----------
+# 优量汇 GDT（腾讯广告）：竞价 / 上报 / 素材
+DOMAIN-SUFFIX,mi.gdt.qq.com,REJECT
+DOMAIN-SUFFIX,sdk.e.qq.com,REJECT
+DOMAIN-SUFFIX,v.gdt.qq.com,REJECT
+DOMAIN-SUFFIX,v3.gdt.qq.com,REJECT
+DOMAIN-SUFFIX,pgdt.ugdtimg.com,REJECT
+DOMAIN-SUFFIX,adsmind.ugdtimg.com,REJECT
+# 穿山甲 Pangolin（字节跳动）：广告接口 / 静态资源 / 试玩组件
+DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao.com,REJECT
+DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao1.com,REJECT
+DOMAIN-SUFFIX,api-access.pangolin-sdk-toutiao-b.com,REJECT
+DOMAIN-SUFFIX,pglstatp-toutiao.com,REJECT
+DOMAIN-SUFFIX,lf-cdn-tos.bytescm.com,REJECT
+# 神马 sm.cn（阿里 UC）：SSP 竞价 / SDK 日志
+DOMAIN-SUFFIX,hc-ssp.sm.cn,REJECT
+DOMAIN-SUFFIX,sdk-log.partner.sm.cn,REJECT
+# 广告配置 API（advertisement/config）
+DOMAIN-SUFFIX,lamps-api.hoorahgo.com,REJECT
+
+# ---------- 埋点 / 数据统计（可选，非广告；仅减少数据上报，不需要可整段删除） ----------
+DOMAIN-SUFFIX,hermes.hupu.com,REJECT
+DOMAIN-SUFFIX,collect.hupu.com,REJECT
+DOMAIN-SUFFIX,ccdace.hupu.com,REJECT
 
 [Rewrite]
 # ---------- 请求侧：让广告接口返回空 ----------
@@ -35,6 +68,10 @@ request if ${url} ~= /^https:\/\/bbs\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/(bbsall
 request if ${url} ~= /^https:\/\/games\.mobileapi\.hupu\.com\/\d+\/[\d.]+\/search\/v2\/(hintkeylist|hotkeylist)/i then reject_dict(200)
 # 插屏 / 开屏广告配置
 request if ${url} ~= /^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/interfaceAd\/getOther\/(v\d+|batch)/i then reject_dict(200)
+# 头条 / 穿山甲广告拉取
+request if ${url} ~= /^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/toutiao\/app/i then reject_dict(200)
+# 广告配置（libra_group 参数全是 ad_* 开关；config/h5 为 H5 广告配置）
+request if ${url} ~= /^https:\/\/goblin\.hupu\.com\/\d+\/[\d.]+\/config\/(app|h5)/i then reject_dict(200)
 # 广告曝光监控与回执
 request if ${url} ~= /^https:\/\/games\.mobileapi\.hupu\.com\/.+?\/(interfaceAdMonitor|interfaceAd)\//i then reject(404)
 # 首页位置广告位 banner（原 kelee 版写死 /3/8.0.86/ 导致失效，此处已通配）
